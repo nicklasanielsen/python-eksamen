@@ -6,7 +6,7 @@ Døgnrapporten
 
 ## Kort beskrivelse
 
-I dette projekt har vi tænkt os at behandle data fra [Politiets døgnrapporter](https://politi.dk/doegnrapporter), hvor vi vil normalisere døgnrapporternes indhold ud fra hvilken hvilken type forbrydelse der har fundet sted, hvor og hvornår.
+I dette projekt har vi tænkt os at behandle data fra [Politiets døgnrapporter](https://politi.dk/doegnrapporter), hvor vi vil normalisere døgnrapporternes indhold ud fra hvilken type forbrydelse der har fundet sted, hvor og hvornår.
 
 Når døgnrapporterne er blevet normaliseret, vil vi behandle dataene således, at vi vha. graffer kan illustrere hvordan udviklingen af forbrydelsen har ændret sig over en tidsperiode på landsplan, i de forskellige politikredse eller i et given postnummer.
 
