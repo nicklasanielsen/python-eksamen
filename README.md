@@ -8,7 +8,7 @@ Døgnrapporten
 
 I dette projekt har vi tænkt os at behandle data fra [Politiets døgnrapporter](https://politi.dk/doegnrapporter), hvor vi vil standardisere døgnrapporternes indhold ud fra hvilken type forbrydelse der har fundet sted, hvor og hvornår.
 
-Når døgnrapporterne er blevet normaliseret, vil vi behandle dataene således, at vi vha. graffer kan illustrere hvordan udviklingen af forbrydelsen har ændret sig over en tidsperiode på landsplan, i de forskellige politikredse eller i et given postnummer.
+Når døgnrapporterne er blevet standardiseret, vil vi behandle dataene således, at vi vha. graffer kan illustrere hvordan udviklingen af forbrydelsen har ændret sig over en tidsperiode på landsplan, i de forskellige politikredse eller i et given postnummer.
 
 Til slut har vi tænkt os, at illustrere mængden af typen af forbrydelse på et heatmap over Danmark.
 
