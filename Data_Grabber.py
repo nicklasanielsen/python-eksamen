@@ -4,7 +4,6 @@ import re
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import seaborn as sns
 
 #Reads the page of the link
 def read_page(link):
@@ -189,7 +188,6 @@ def plotting(links):
     plt.xticks(rotation=45, horizontalalignment='right')
     plt.ylabel("Amount of incidents", fontsize=10)
     plt.bar(df_sorted.loc[:, "City"], df_sorted.loc[:, "Crimes"])
-    plt.gca().invert_xaxis()
     plt.show()
 
     
