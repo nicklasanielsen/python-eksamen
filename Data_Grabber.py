@@ -2,29 +2,35 @@ import bs4
 import requests
 import re
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import seaborn as sns
 
-def read_page ():
-    r = requests.get('https://politi.dk/fyns-politi/doegnrapporter/fyns-politi-doegnrapport-20052021/2021/05/21')
+#Reads the page of the link
+def read_page(link):
+    r = requests.get(link)
     soup = bs4.BeautifulSoup(r.text, 'html.parser')
     return soup
 
-def select_Segment ():
-    soup = read_page()
+
+def select_Segment(link):
+    soup = read_page(link)
     segment = soup.select('article[class=newsArticle]')
     return segment
 
-def select_Headline ():
-    soup = read_page()
+def select_Headline(link):
+    soup = read_page(link)
     headline = soup.select('h1[class="h1-police-bold dark-blue"]')
     return headline
 
-def select_Incident_Text ():
-    soup = read_page()
+def select_Incident_Text(link):
+    soup = read_page(link)
     text = soup.findAll('p', attrs={'class' : None})
     return text
 
-def select_Incident_Header ():
-    soup = read_page()
+#Selects the header of the incident
+def select_Incident_Header(link):
+    soup = read_page(link)
     header = soup.findAll('h3', attrs={'class' : None})
 
     soup_str = soup_to_string(header)
@@ -33,19 +39,19 @@ def select_Incident_Header ():
 
     return soup_str
 
-def select_All_Text ():
-    soup = read_page()
+def select_All_Text(link):
+    soup = read_page(link)
     all_Text = soup.get_text()
     all_Text = all_Text.replace("\t", "").replace("\r", "").replace("\n", "")
     return all_Text
 
-def select_Incident ():
-    soup = read_page()
+def select_Incident(link):
+    soup = read_page(link)
     incident = soup.select('div[class="rich-text"]')
 
     return incident
 
-def select_Incident_Crimes ():
+def select_Incident_Crimes():
     crimes = select_Incident()
 
     soup_str = soup_to_string(crimes)
@@ -58,15 +64,15 @@ def select_Incident_Crimes ():
 def get_crimes(dicts):
     return dicts.get("Antal af forbrydelser")
 
-def incident_Locations():
-    regions = select_Incident_Header()
-    cities = select_Incident()
+def incident_Locations(link):
+    regions = select_Incident_Header(link)
+    cities = select_Incident(link)
 
     cities = soup_to_string(cities)
 
-    list_of_cities = re.findall(r'\d{4} [A-Z][^\s]+', cities)
+    list_of_cities = re.findall(r'\d{4} [A-ZÆØÅ][^\s]+', cities)
     list_of_cities.sort(reverse=True)
-    list_of_regions = re.findall('[A-Z][^A-Z]*', regions)
+    list_of_regions = re.findall('[A-ZÆØÅ][^A-ZÆØÅ]*', regions)
 
     list_of_dicts = []
 
@@ -91,33 +97,60 @@ def incident_Locations():
 
     return list_of_dicts
 
-def incidents_for_cities():
-    locations = incident_Locations()
-    list_of_sets = []
-    city = ""
-    crimes = ""
+def incidents_for_cities(links):
     result_list = []
+    for i in links:
+        locations = incident_Locations(i)
+        list_of_sets = []
+        city = ""
+        crimes = ""
     
-    for i in range(len(locations)):
-        city = locations[i].get("By og postnummer")
-        crimes = locations[i].get("Antal af forbrydelser")
-        setset = (city, crimes)
+        for i in range(len(locations)):
+            city = locations[i].get("By og postnummer")
+            crimes = locations[i].get("Antal af forbrydelser")
+            setset = (city, crimes)
 
-        list_of_sets.append(setset)
+            list_of_sets.append(setset)
 
-    cities_set = set()
+        cities_set = set()
 
-    for i in range(len(list_of_sets)):
-        if list_of_sets[i][0] in cities_set:
-            continue
-        else:
-            cities_set.add(list_of_sets[i][0])
-            result_list.append(list_of_sets[i])
+        for i in range(len(list_of_sets)):
+            if list_of_sets[i][0] in cities_set:
+                continue
+            else:
+                cities_set.add(list_of_sets[i][0])
+                result_list.append(list_of_sets[i])
     
     return result_list
 
-def incident_Time():
-    times = select_Incident()
+def calculate_crimes(list_of_crimes):
+    cities_set = set()
+    current_city = ""
+    crime_counter = 0
+    list_of_crimes.sort()
+    result_list = []
+    result_tuple = ()
+
+    for i in range(len(list_of_crimes)):
+        if list_of_crimes[i][0] in cities_set:
+            crime_counter += list_of_crimes[i][1]
+            result_tuple = (current_city, crime_counter)
+            if result_tuple[0] == (list_of_crimes[len(list_of_crimes)-1][0]):
+                result_list.append(result_tuple)
+        else:
+            if i != 0:
+                result_list.append(result_tuple)
+            cities_set.add(list_of_crimes[i][0])
+            current_city = list_of_crimes[i][0]
+            crime_counter = list_of_crimes[i][1]
+            result_tuple = (current_city, crime_counter)
+            if result_tuple == (list_of_crimes[len(list_of_crimes)-1][0], list_of_crimes[len(list_of_crimes)-1][1]):
+                result_list.append(result_tuple)
+             
+    return result_list
+
+def incident_Time(link):
+    times = select_Incident(link)
     
     soup_str = soup_to_string(times)
 
@@ -140,22 +173,23 @@ def soup_to_string(soup_list):
 
     return soup_str
 
-def plotting():
-    list_of_plotting = incidents_for_cities()
+def plotting(links):
     cities_list = []
     crimes_list = []
+    list_for_plotting = calculate_crimes(incidents_for_cities(links))
 
-    for i in range(len(list_of_plotting)):
-        cities_list.append(list_of_plotting[i][0])
-        crimes_list.append(list_of_plotting[i][1])
-        
-    cities_list.sort()
-    crimes_list.sort()
-    
+    for i in range(len(list_for_plotting)):
+        cities_list.append(list_for_plotting[i][0])
+        crimes_list.append(list_for_plotting[i][1])
+  
+    df = pd.DataFrame({"City": cities_list, "Crimes": crimes_list})
+    df_sorted = df.sort_values(by=['Crimes'])
+
     plt.figure(figsize=[20, 10])
     plt.xticks(rotation=45, horizontalalignment='right')
     plt.ylabel("Amount of incidents", fontsize=10)
-    plt.bar(cities_list, crimes_list)
+    plt.bar(df_sorted.loc[:, "City"], df_sorted.loc[:, "Crimes"])
+    plt.gca().invert_xaxis()
     plt.show()
 
     
