@@ -11,7 +11,6 @@ def read_page(link):
     soup = bs4.BeautifulSoup(r.text, 'html.parser')
     return soup
 
-
 def select_Segment(link):
     soup = read_page(link)
     segment = soup.select('article[class=newsArticle]')
@@ -50,12 +49,12 @@ def select_Incident(link):
 
     return incident
 
-def select_Incident_Crimes():
-    crimes = select_Incident()
+def select_Incident_Crimes(link):
+    crimes = select_Incident(link)
 
     soup_str = soup_to_string(crimes)
         
-    soup_str = soup_str.replace("<h3>", "").replace("</h3>", "").replace("\n", "").replace("/","").replace("\xa0","")
+    soup_str = soup_str.replace("<h3>", "").replace("</h3>", "").replace("\n", "").replace("/","").replace("\xa0","").replace("<br>", "")
 
     return soup_str
 
@@ -95,6 +94,19 @@ def incident_Locations(link):
         list_of_dicts.sort(key=get_crimes, reverse=True)
 
     return list_of_dicts
+
+def csv_cities(links):
+    df = pd.read_csv('./postnumre.csv', sep=';') #csv file is from here https://www.postnord.dk/kundeservice/kundeservice-erhverv/om-postnumre/postnummerkort-postnummerfiler
+    cities_set = set(df['BYNAVN'])
+    cities_list = []
+    for link in links:
+        stringg = select_Incident_Crimes(link)
+        for city in cities_set:
+            if city in stringg:
+                count = sum(1 for _ in re.finditer(r'\b%s\b' % re.escape(city), stringg))
+                cities_list.append((city, count))
+
+    return(cities_list)
 
 def incidents_for_cities(links):
     result_list = []
@@ -175,7 +187,7 @@ def soup_to_string(soup_list):
 def plotting(links):
     cities_list = []
     crimes_list = []
-    list_for_plotting = calculate_crimes(incidents_for_cities(links))
+    list_for_plotting = calculate_crimes(csv_cities(links))
 
     for i in range(len(list_for_plotting)):
         cities_list.append(list_for_plotting[i][0])
@@ -189,5 +201,3 @@ def plotting(links):
     plt.ylabel("Amount of incidents", fontsize=10)
     plt.bar(df_sorted.loc[:, "City"], df_sorted.loc[:, "Crimes"])
     plt.show()
-
-    
