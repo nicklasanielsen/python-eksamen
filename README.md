@@ -20,7 +20,7 @@ TBD
 
 ## Installation Guide
 
-TBD
+pip install plotly
 
 ## User Guide
 
