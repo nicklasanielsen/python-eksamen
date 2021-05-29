@@ -4,6 +4,10 @@ import re
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import gmaps
+import gmaps.datasets
+
+gmaps.configure(api_key='AIzaSyCV7H6JuYtk0sh8EE8bn4Czh9aTRdmQLiQ')
 
 #Reads the page of the link
 def read_page(link):
@@ -134,29 +138,29 @@ def incidents_for_cities(links):
     
     return result_list
 
-def calculate_crimes(list_of_crimes):
-    cities_set = set()
-    current_city = ""
-    crime_counter = 0
-    list_of_crimes.sort()
-    result_list = []
-    result_tuple = ()
+def calculate_crimes(links):
+    listt = csv_cities(links)
+    cities = []
+    crimes_counter = []
+    for i in listt:
+        cities.append(i[0])
+        crimes_counter.append(i[1])
 
-    for i in range(len(list_of_crimes)):
-        if list_of_crimes[i][0] in cities_set:
-            crime_counter += list_of_crimes[i][1]
-            result_tuple = (current_city, crime_counter)
-            if result_tuple[0] == (list_of_crimes[len(list_of_crimes)-1][0]):
-                result_list.append(result_tuple)
-        else:
-            if i != 0:
-                result_list.append(result_tuple)
-            cities_set.add(list_of_crimes[i][0])
-            current_city = list_of_crimes[i][0]
-            crime_counter = list_of_crimes[i][1]
-            result_tuple = (current_city, crime_counter)
-            if result_tuple == (list_of_crimes[len(list_of_crimes)-1][0], list_of_crimes[len(list_of_crimes)-1][1]):
-                result_list.append(result_tuple)
+    cset = set()
+    counter_list = []
+
+    for city in cities:
+        if city in cset:
+            continue
+        cset.add(city)
+
+        counter = 0
+        for i in range(len(cities)):
+            if city == cities[i]:
+                counter += crimes_counter[i]
+        counter_list.append((city, counter))
+
+    return counter_list
              
     return result_list
 
@@ -187,7 +191,7 @@ def soup_to_string(soup_list):
 def plotting(links):
     cities_list = []
     crimes_list = []
-    list_for_plotting = calculate_crimes(csv_cities(links))
+    list_for_plotting = calculate_crimes(links)
 
     for i in range(len(list_for_plotting)):
         cities_list.append(list_for_plotting[i][0])
@@ -201,3 +205,21 @@ def plotting(links):
     plt.ylabel("Amount of incidents", fontsize=10)
     plt.bar(df_sorted.loc[:, "City"], df_sorted.loc[:, "Crimes"])
     plt.show()
+
+def draw_heatmap(links):
+    cities_list = []
+    crimes_list = []
+    list_for_plotting = calculate_crimes(links)
+
+    for i in range(len(list_for_plotting)):
+        cities_list.append(list_for_plotting[i][0])
+        crimes_list.append(list_for_plotting[i][1])
+
+    earthquake_df = gmaps.datasets.load_dataset_as_df('earthquakes')
+    earthquake_df .head()
+
+    locations = earthquake_df[['latitude', 'longitude']]
+    weights = earthquake_df['magnitude']
+    fig = gmaps.figure()
+    fig.add_layer(gmaps.heatmap_layer(locations, weights=weights))
+    return fig
