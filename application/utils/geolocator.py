@@ -1,21 +1,36 @@
 from geopy.geocoders import Nominatim
+from geopy.extra.rate_limiter import RateLimiter
 
+locations = []
 
 def locate(incident):
-    print(incident)
-    geolocator = Nominatim(user_agent="min mor")
+    print(incident["city"])
+    for location in range(len(locations)):
+        if location["city"] == incident["city"]:
+            incident["latitude"] = location["latitude"]
+            incident["longitude"] = location["longitude"]
+            print("found!")
+            return incident
+
+    print("Looking..")
+    geolocator = Nominatim(user_agent="cphbusiness-python-exam-newbiz")
+    geocode = RateLimiter(geolocator.geocode, min_delay_seconds=1)
 
     country = "Denmark"
 
-    loc = geolocator.geocode(
-        incident["city"] + ", " + country, exactly_one=True, timeout=60
-    )
+    loc = geocode(incident["city"])
 
     try:
-        incident["latitude"] = loc.latitude
-        incident["longitude"] = loc.longitude
+        latitude = loc.latitude
+        longitude = loc.longitude
+
+        locations.append({"city":incident["city"],"latitude":latitude,"longitude":longitude})
     except:
-        incident["latitude"] = None
-        incident["longitude"] = None
+        latitude = None
+        longitude = None
+    
+    incident["latitude"]=latitude
+    incident["longitude"]=longitude
+
 
     return incident

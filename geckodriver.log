@@ -1,0 +1,6 @@
+1622306235505	mozrunner::runner	INFO	Running command: "/usr/bin/firefox" "-marionette" "-foreground" "-no-remote" "-profile" "/tmp/rust_mozprofileYV39uG"
+Unable to init server: Broadway display type not supported: unixneeds-to-be-defined
+Error: cannot open display: unixneeds-to-be-defined
+1622306384075	mozrunner::runner	INFO	Running command: "/usr/bin/firefox" "-marionette" "-foreground" "-no-remote" "-profile" "/tmp/rust_mozprofiles6GsYd"
+Unable to init server: Broadway display type not supported: unixneeds-to-be-defined
+Error: cannot open display: unixneeds-to-be-defined
