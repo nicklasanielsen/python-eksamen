@@ -259,6 +259,6 @@ def draw_heatmap(links):
 
     fig = gmaps.figure()
     fig.add_layer(gmaps.heatmap_layer(locations, weights=weights))
-    fig
+    return fig
 
-    widgets.IntSlider()
+    #widgets.IntSlider()
