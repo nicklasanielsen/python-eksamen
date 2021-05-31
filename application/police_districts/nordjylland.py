@@ -1,7 +1,7 @@
 import bs4
 import requests
 
-from utils.crime_identifier import crime_identifier
+from application.utils.crime_identifier import crime_identifier
 
 
 class nordjylland_handler:

@@ -4,14 +4,16 @@ from time import sleep
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
 
-from police_districts.bornholm import bornholm_handler
-from police_districts.fyn import fyn_handler
-from police_districts.koebenhavns_vestegn import koebenhavns_vestegn_handler
-from police_districts.midt_og_vestsjaelland import midt_og_vestsjaelland_handler
-from police_districts.nordjylland import nordjylland_handler
-from police_districts.nordsjaelland import nordsjaelland_handler
-from police_districts.oestjylland import oestjylland_handler
-from police_districts.sydsjaellands_og_lolland_falster import (
+from application.police_districts.bornholm import bornholm_handler
+from application.police_districts.fyn import fyn_handler
+from application.police_districts.koebenhavns_vestegn import koebenhavns_vestegn_handler
+from application.police_districts.midt_og_vestsjaelland import (
+    midt_og_vestsjaelland_handler,
+)
+from application.police_districts.nordjylland import nordjylland_handler
+from application.police_districts.nordsjaelland import nordsjaelland_handler
+from application.police_districts.oestjylland import oestjylland_handler
+from application.police_districts.sydsjaellands_og_lolland_falster import (
     sydsjaellands_og_lolland_falster_handler,
 )
 
@@ -19,12 +21,16 @@ from police_districts.sydsjaellands_og_lolland_falster import (
 def fetch_report_links(start_date, end_date):
     page = 1
 
+    print("Starting headless webdriver..")
+
     options = Options()
     options.headless = True
 
     browser = webdriver.Firefox(options=options)
 
     report_links = []
+
+    print("Gathering daliy police reports.. This may take a while..")
 
     while True:
         url = (
@@ -37,7 +43,6 @@ def fetch_report_links(start_date, end_date):
         )
 
         browser.get(url)
-        print("Requesting: " + url)
         sleep(3)
 
         links = browser.find_elements_by_class_name("newsResultLink")
@@ -49,6 +54,10 @@ def fetch_report_links(start_date, end_date):
             page += 1
         else:
             break
+
+    print(
+        "Done gathering police reports.. Found " + str(len(report_links)) + " reports"
+    )
 
     browser.close()
 
@@ -91,6 +100,8 @@ def district_sorter(links=[]):
 def get_incidents(reports=[]):
     incidents = []
 
+    print("Comparing incidents..")
+
     for report in reports:
         incidents.extend(report)
 
@@ -99,6 +110,8 @@ def get_incidents(reports=[]):
 
 def fetch_incidents(districts={}, workers=25):
     incidents = []
+
+    print("Reading the reports..")
 
     with ThreadPoolExecutor(workers) as ex:
         bornholm = ex.map(bornholm_handler.fetch, districts.get("bornholm"))
@@ -121,14 +134,16 @@ def fetch_incidents(districts={}, workers=25):
         )
         oestjylland = ex.map(oestjylland_handler.fetch, districts.get("oestjylland"))
 
-        # incidents.extend(get_incidents(bornholm))
+        # incidents.extend(get_incidents(bornholm)) # Disabled since this district isn't implemented
         incidents.extend(get_incidents(fyn))
-        # incidents.extend(get_incidents(koebenhavns_vestegn))
+        # incidents.extend(get_incidents(koebenhavns_vestegn)) # Disabled since this district isn't implemented
         incidents.extend(get_incidents(midt_og_vestsjaelland))
         incidents.extend(get_incidents(nordjylland))
         incidents.extend(get_incidents(nordsjaelland))
         incidents.extend(get_incidents(sydsjaellands_og_lolland_falster))
-        # incidents.extend(get_incidents(oestjylland))
+        # incidents.extend(get_incidents(oestjylland)) # Disabled since this district isn't implemented
+
+    print("Done reading the reports..")
 
     return incidents
 

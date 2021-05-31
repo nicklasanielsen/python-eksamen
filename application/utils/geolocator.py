@@ -3,6 +3,7 @@ from geopy.extra.rate_limiter import RateLimiter
 
 locations = []
 
+
 def locate(city):
     for location in locations:
         if location["city"] == city:
@@ -13,17 +14,15 @@ def locate(city):
 
     country = "Denmark"
 
-    loc = geocode(city +", " +country)
+    loc = geocode(city + ", " + country)
 
     try:
         latitude = loc.latitude
         longitude = loc.longitude
 
-        locations.append({"city":city,"latitude":latitude,"longitude":longitude})
+        locations.append({"city": city, "latitude": latitude, "longitude": longitude})
     except:
         latitude = None
         longitude = None
-    
-    
-           
-    return latitude,  longitude
+
+    return latitude, longitude

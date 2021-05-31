@@ -2,7 +2,7 @@ import bs4
 import requests
 from requests.api import head
 
-from utils.crime_identifier import crime_identifier
+from application.utils.crime_identifier import crime_identifier
 
 
 class midt_og_vestsjaelland_handler:

@@ -1,52 +1,24 @@
-from utils import data_fetcher
-from utils import geolocator
-from utils import mapper
+from application.utils import data_fetcher
+from application.utils import geolocator
+from application.utils import mapper
+from application.utils import charter
 
 import pandas as pd
 import numpy as np
 
 
-def main():
-    print("Fetching..")
-    data = data_fetcher.fetch("2021/05/29", "2021/05/30")
-
+def prepare_data(start_date, end_date):
+    print("Preparing to gather the requested data..")
     cities = []
     crimes = []
-    for d in data:
-        cities.append(d["city"])
-        crimes.append(d["crime"])
 
-    crimes_set = set()
-    counter_list = []
-    dup_set = set()
+    fetched_data = data_fetcher.fetch(start_date, end_date)
 
-    for c in range(len(crimes)):
-        if c in crimes_set:
-            continue
-        crimes_set.add(crimes[c])
+    if len(fetched_data) == 0:
+        print("No valid data found")
+        return
 
-        counter = 0
-        for i in range(len(crimes)):
-            if crimes[c] == crimes[i] and cities[c] == cities[i]:
-                counter += 1
-        
-        x = geolocator.locate(cities[c])[0]
-        y = geolocator.locate(cities[c])[1]
-        tmp =  (cities[c], crimes[c], counter, x,y)
-        if tmp in dup_set:
-            continue
-        dup_set.add(tmp)
-        counter_list.append((cities[c], crimes[c], counter, x,y))
-        
-    print(counter_list[0][0:3])
-
-
-
-def test():
-    cities=[]
-    crimes=[]
-
-    fetched_data = data_fetcher.fetch("2021/05/28", "2021/05/30")
+    print("Creating dataframe..")
 
     for report in fetched_data:
         if report["city"] not in cities:
@@ -55,14 +27,22 @@ def test():
         if report["crime"] not in crimes:
             crimes.append(report["crime"])
 
-    tmp_list =[]
+    tmp_list = []
 
     for city in cities:
-        city_crimes= []
+        city_crimes = []
 
-        tmp = 0;
+        tmp = 0
         for crime in crimes:
-            amount = len(list(filter(lambda record: record["city"]== city and record["crime"]==crime, fetched_data)))
+            amount = len(
+                list(
+                    filter(
+                        lambda record: record["city"] == city
+                        and record["crime"] == crime,
+                        fetched_data,
+                    )
+                )
+            )
             tmp += amount
 
             city_crimes.append(amount)
@@ -73,7 +53,6 @@ def test():
         city_crimes.append(coordinates[0])
         city_crimes.append(coordinates[1])
 
-
         tmp_list.append(city_crimes.copy())
         city_crimes.clear()
 
@@ -83,10 +62,30 @@ def test():
 
     df2 = pd.DataFrame(np.array(tmp_list), index=cities, columns=crimes)
 
-    #print(df2)
+    df2 = df2.dropna()
 
-    return mapper.draw(df2)
+    print("Dataframe created.")
+
+    return df2
 
 
-if __name__ == "__main__":
-    test()
+def map(start_date, end_date, crime="i alt"):
+    data = prepare_data(start_date, end_date)
+
+    if len(data) == 0:
+        return
+
+    data.drop(
+        data.columns.difference([crime, "latitude", "longitude"]), 1, inplace=True
+    )
+
+    return mapper.draw(data)
+
+
+def chart(start_date, end_date, column="i alt"):
+    data = prepare_data(start_date, end_date)
+
+    if len(data) == 0:
+        return
+
+    return charter.plotter(data, column)

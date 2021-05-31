@@ -2,7 +2,7 @@ import bs4
 import requests
 import re
 
-from utils.crime_identifier import crime_identifier
+from application.utils.crime_identifier import crime_identifier
 
 
 class fyn_handler:

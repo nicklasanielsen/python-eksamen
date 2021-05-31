@@ -1,0 +1,10 @@
+Group name:
+- NewBiz
+
+Name and cphbusiness ID of each group member:
+- Mathias Haugaard Nielsen (cph-mn556)
+- Nicklas Alexander Nielsen (cph-nn161)
+- Nikolaj Larsen (cph-nl174)
+
+URl to github repo containing the project: 
+- https://github.com/nicklasanielsen/python-eksamen
